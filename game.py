@@ -5,6 +5,8 @@ import numpy
 
 import cocos
 from cocos import tiles,actions,layer
+from collutil import *
+import cocos.collision_model as cm
 
 class ActorController(actions.Action, tiles.RectMapCollider):
   MOVE_SPEED = 1
@@ -19,9 +21,20 @@ class ActorController(actions.Action, tiles.RectMapCollider):
       terr = curCell.tile.properties['speed']
     else:
       terr = 100
-    
-    dx = (1+keyboard[key.LSHIFT]*2)*terr*(keyboard[key.RIGHT] - keyboard[key.LEFT]) * self.MOVE_SPEED * dt
-    dy = (1+keyboard[key.LSHIFT]*2)*terr*(keyboard[key.UP] - keyboard[key.DOWN]) * self.MOVE_SPEED * dt
+    run = keyboard[key.LCTRL] 
+    shoot = keyboard[key.SPACE]
+    if shoot:
+        bullet = cocos.sprite.Sprite(man_seq[0])
+        world.add(bullet)
+        bullet.position = self.target.position
+        bullet.do(actions.MoveTo((self.target.x+100,self.target.y),6))
+    dx = (1+run*2)*terr*(keyboard[key.RIGHT] - keyboard[key.LEFT]) * self.MOVE_SPEED * dt
+    dy = (1+run*2)*terr*(keyboard[key.UP] - keyboard[key.DOWN]) * self.MOVE_SPEED * dt
+    if self.target.state == 'coll':
+        self.target.state = 'norm'
+        dx = -dx
+        dy = -dy
+    #print keyboard
     if dx != 0 or dy != 0:
       if dy > 0:
         self.target.image = man_seq[1]
@@ -70,6 +83,10 @@ class RandomController(actions.Action, tiles.RectMapCollider):
       self.ud = numpy.random.randint(3) - 1
     dx = terr*(self.rl) * self.MOVE_SPEED * dt
     dy = terr*(self.ud) * self.MOVE_SPEED * dt
+    if self.target.state == 'coll':
+        self.target.state = 'norm'
+        dx = -dx
+        dy = -dy
     if dx != 0 or dy != 0:
       if dy > 0:
         self.target.image = man_seq[1]
@@ -97,31 +114,46 @@ class RandomController(actions.Action, tiles.RectMapCollider):
     #position is the sprite's center
     self.target.position = new.center
 
+class World(cocos.layer.ScrollableLayer):
+    def __init__(self):
+        super(World,self).__init__()
+        self.collobjs = set()
+        self.collman = cm.CollisionManagerGrid(-8,800+8,-8,600+8,40.0,40.0)
+        self.schedule(self.update)
+    def update(self,dt):
+        self.collman.clear()
+        for o in self.collobjs:
+            o.update(dt)
+            self.collman.add(o)
+        for objA,objB in self.collman.iter_all_collisions():
+            objA.state = 'coll'
+            objB.state = 'coll'
+            print 'im here'
 
 def main():
-  global tilemap, keyboard, scroller,man_seq
+  global tilemap, keyboard, scroller,man_seq,world
   from cocos.director import director
   director.init(width=800,height=600, do_not_scale=True, resizable=True)
 
-  actor_layer = layer.ScrollableLayer()
+  world = World()
   man = pyglet.image.load('man.png')
   man_seq = pyglet.image.ImageGrid(man,1,4)
-  actor = cocos.sprite.Sprite(man_seq[0])
-  actor_layer.add(actor)
-  actor.position = (200,100)
+  actor = CSprite(man_seq[0],200,100,10)
+  world.add(actor)
+  world.collobjs.add(actor)
   actor.do(ActorController())
   
   #enemy
-  enemy = cocos.sprite.Sprite(man_seq[0])
-  actor_layer.add(enemy)
-  enemy.position = (200,200)
+  enemy = CSprite(man_seq[0],200,200,10)
+  world.add(enemy)
+  world.collobjs.add(enemy)
   enemy.do(RandomController())
 
   scroller = layer.ScrollingManager()
   tilemap = tiles.load('desert.tmx')['Level0']
   tilemap.visible = 1
   scroller.add(tilemap)
-  scroller.add(actor_layer)
+  scroller.add(world)
 
   main_scene = cocos.scene.Scene(scroller)
 
