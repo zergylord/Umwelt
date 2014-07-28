@@ -6,6 +6,8 @@ import numpy as np
 import cocos
 from cocos import tiles,actions,layer
 from collutil import *
+from enemies import *
+from entities import *
 import cocos.collision_model as cm
 
 class MyMoveTo(actions.base_actions.IntervalAction, tiles.RectMapCollider):
@@ -126,6 +128,14 @@ class RandomController(SpriteController, tiles.RectMapCollider):
             self.up = move == 2
             self.down = move == 3
 
+def symColl(o1,o2):
+    coll(o1,o2)
+    coll(o2,o1)
+def coll(o1,o2):
+    o1.state = 'coll'
+    o1.cshape.center = o1.position
+    if isinstance(o1,Projectile) and isinstance(o2,Being):
+        o2.health -= o1.damage
         
 class World(cocos.layer.ScrollableLayer):
     def __init__(self):
@@ -135,10 +145,7 @@ class World(cocos.layer.ScrollableLayer):
         self.schedule(self.update)
     def update(self,dt):
         for objA,objB in self.collman.iter_all_collisions():
-            objA.state = 'coll'
-            objA.cshape.center = objA.position
-            objB.state = 'coll'
-            objB.cshape.center = objB.position
+            symColl(objA,objB)
             print 'im here'
         self.collman.clear()
         #temp = self.collobjs.__deepcopy__()
@@ -173,14 +180,13 @@ def main():
   world = World()
   man = pyglet.image.load('man.png')
   man_seq = pyglet.image.ImageGrid(man,1,4)
-  actor = CSprite(man_seq[0],200,100,16)
+  actor = Hero(man_seq[0],(200,100))
   world.add(actor)
   world.collobjs.add(actor)
   actor.do(ActorController())
-  #actor.do(SpriteController())
   
   #enemy
-  enemy = CSprite(man_seq[0],200,200,16)
+  enemy = BasicEnemy(man_seq[0],(200,200))
   world.add(enemy)
   world.collobjs.add(enemy)
   enemy.do(RandomController())

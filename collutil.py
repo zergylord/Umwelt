@@ -15,6 +15,7 @@ class CSprite(cocos.sprite.Sprite):
         else:
             self.position = self.cshape.center
 class Projectile(CSprite):
+    damage = 25
     def __init__(self,world,image,center_x,center_y,radius):
         super(Projectile,self).__init__(image,center_x,center_y,radius)
         self.world = world
