@@ -2,7 +2,10 @@ from collutil import *
 class Being(CSprite):
     maxHealth = 100
     health = maxHealth
-    def __init__(self,image,pos,radius):
+    image_seq = ()
+    def __init__(self,image_seq,pos,radius):
+        self.image_seq = image_seq
+        image = image_seq[0]
         super(Being,self).__init__(image,pos[0],pos[1],radius)
     def update(self,dt):
         super(Being,self).update(dt)
