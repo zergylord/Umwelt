@@ -2,6 +2,7 @@ from collutil import *
 from entities import *
 class BasicEnemy(Being):
     def __init__(self,image,pos):
+        self.shootTimer = 100;
         self.controlled = False
         super(BasicEnemy,self).__init__(image,pos,16)
     def update(self,dt):

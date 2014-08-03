@@ -86,8 +86,6 @@ class ActorController(SpriteController, tiles.RectMapCollider):
                 self.target.state = 'control_target'
                 print 'im controling!'
 
-
-
 class RandomController(SpriteController, tiles.RectMapCollider):
     decisionTime = 2
     decisionTimeLeft = decisionTime
