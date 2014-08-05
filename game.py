@@ -14,9 +14,52 @@ import cocos.collision_model as cm
 def Patrol(pos1,pos2,speed):
     dist = pow(pow(pos1[0]-pos2[0],2)+pow(pos1[1]-pos2[1],2),.5) 
     return actions.Repeat(
-        MyMoveToWhileShooting(pos1,dist/speed) +
+        MyMoveTo(pos1,dist/speed) +
         MyMoveTo(pos2,dist/speed)
         )
+class ShootAtEnemy(actions.base_actions.IntervalAction, tiles.RectMapCollider):
+  spos = 0
+  #work around since Init can't handle pointers
+  def initVars(self,enemy):
+    self.enemy = enemy
+    self.heading = np.array((0,1))
+  def init(self,dur):
+      self.duration = dur
+  def start(self):
+      pass
+  def update(self,t):
+    dx = self.enemy.position[0] - self.target.position[0]
+    dy = self.enemy.position[1] - self.target.position[1]
+    if dy > 0: #moving up
+        self.heading = np.array((0,1))
+        self.target.image = self.target.image_seq[1]
+        if abs(dx) - abs(dy) > 0:#left
+          self.heading = np.array((-1,0))
+          self.target.image = self.target.image_seq[2]
+          if dx > 0: #moving right
+            self.heading = np.array((1,0))
+            self.target.image = self.target.image.get_transform(flip_x=True)
+    else:#moving down
+        self.heading = np.array((0,-1))
+        self.target.image = self.target.image_seq[0]
+        if abs(dx) - abs(dy) > 0:#left
+          self.heading = np.array((-1,0))
+          self.target.image = self.target.image_seq[2]
+          if dx > 0:#right
+            self.heading = np.array((1,0))
+            self.target.image = self.target.image.get_transform(flip_x=True)
+    shoot = True
+    delta = np.array((dx,dy))
+    exactHead = delta/np.linalg.norm(delta)
+    if shoot and self.target.shootTimer <= 0:
+        bullet = Projectile(g.world,self.target.position+exactHead*45,16)
+        g.world.add(bullet)
+        g.world.collobjs.add(bullet)
+        #bullet.do(RandomController())
+        bullet.do(MyMoveTo(self.target.position+exactHead*500,1))
+        self.target.shootTimer = 100
+    else:
+        self.target.shootTimer -= 1
 class MyMoveToWhileShooting(actions.base_actions.IntervalAction, tiles.RectMapCollider):
   spos = 0
   def __init__(self,tpos,dur):
@@ -163,6 +206,7 @@ def main():
   man = pyglet.image.load('man.png')
   man_seq = pyglet.image.ImageGrid(man,1,4)
   actor = Hero(man_seq,(200,100))
+  g.player = actor
   g.world.add(actor)
   g.world.collobjs.add(actor)
   actor.do(ActorController())
@@ -174,6 +218,8 @@ def main():
   #enemy.do(RandomController())
   #enemy.do(MyMoveTo((100,100),2)+MyMoveTo((1000,100),5))
   enemy.do(Patrol((1000,100),(100,100),100))
+  patAction = enemy.do(ShootAtEnemy(50))
+  patAction.initVars(g.player)
 
   g.scroller.add(g.tilemap)
   g.scroller.add(g.world)
