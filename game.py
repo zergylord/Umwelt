@@ -193,6 +193,11 @@ class World(cocos.layer.ScrollableLayer):
             #k.kill()
         killSet.clear()
 
+def makeEnemy(images,pos):
+  enemy = BasicEnemy(images,pos)
+  g.world.add(enemy)
+  g.world.collobjs.add(enemy)
+  return enemy
 
 def main():
   from cocos.director import director
@@ -212,14 +217,22 @@ def main():
   actor.do(ActorController())
   
   #enemy
-  enemy = BasicEnemy(man_seq,(200,200))
-  g.world.add(enemy)
-  g.world.collobjs.add(enemy)
-  #enemy.do(RandomController())
-  #enemy.do(MyMoveTo((100,100),2)+MyMoveTo((1000,100),5))
+  enemy = makeEnemy(man_seq,(200,200))
   enemy.do(Patrol((1000,100),(100,100),100))
-  patAction = enemy.do(ShootAtEnemy(50))
-  patAction.initVars(g.player)
+  fancyAction = enemy.do(ShootAtEnemy(50))
+  fancyAction.initVars(g.player)
+
+  #enemy
+  enemy = makeEnemy(man_seq,(200,300))
+  enemy.do(Patrol((1000,200),(100,200),100))
+  fancyAction = enemy.do(ShootAtEnemy(50))
+  fancyAction.initVars(g.player)
+
+  #enemy
+  enemy = makeEnemy(man_seq,(200,400))
+  enemy.do(Patrol((1000,300),(100,300),100))
+  fancyAction = enemy.do(ShootAtEnemy(50))
+  fancyAction.initVars(g.player)
 
   g.scroller.add(g.tilemap)
   g.scroller.add(g.world)
