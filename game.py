@@ -52,7 +52,7 @@ class ShootAtEnemy(actions.base_actions.IntervalAction, tiles.RectMapCollider):
     delta = np.array((dx,dy))
     exactHead = delta/np.linalg.norm(delta)
     if shoot and self.target.shootTimer <= 0:
-        bullet = Projectile(g.world,self.target.position+exactHead*45,16)
+        bullet = Projectile(g.world,self.target.position+exactHead*50,16)
         g.world.add(bullet)
         g.world.collobjs.add(bullet)
         #bullet.do(RandomController())
@@ -149,10 +149,15 @@ def symColl(o1,o2):
     coll(o1,o2)
     coll(o2,o1)
 def coll(o1,o2):
-    o1.state = 'coll'
-    o1.cshape.center = o1.position
+    if isinstance(o1,CSprite) and isinstance(o2,CSprite): #change to a more general 'collidable interface
+        o1.state = 'coll'
+        o1.cshape.center = o1.position
     if isinstance(o1,Projectile) and isinstance(o2,Being):
         o2.health -= o1.damage
+    if isinstance(o1,SightBox): 
+        if o2 == o1.enemy:
+            o1.state = 'foundEnemy'
+            print 'rarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
         
 class World(cocos.layer.ScrollableLayer):
     controlNext = False
@@ -164,10 +169,10 @@ class World(cocos.layer.ScrollableLayer):
     def update(self,dt):
         for objA,objB in self.collman.iter_all_collisions():
             symColl(objA,objB)
-            print 'im here'
         self.collman.clear()
         #temp = self.collobjs.__deepcopy__()
         killSet = set()
+        colremSet = set()
         for o in self.collobjs:
             if self.controlNext and isinstance(o,BasicEnemy):
                 self.controlNext = False
@@ -179,18 +184,19 @@ class World(cocos.layer.ScrollableLayer):
                 self.controlNext = True
                 o.state = 'norm'
             if o.state == 'kill':
-                #world.remove(o)
-                #self.collobjs.remove(o)
-                #o.kill()
                 killSet.add(o)
                 print 'dead'
+            elif o.state == 'colrem':
+                colremSet.add(o)
             else:
                 self.collman.add(o)
 
+        for k in colremSet:
+            self.collobjs.remove(k)
+        colremSet.clear()
         for k in killSet:
             g.world.remove(k)
             self.collobjs.remove(k)
-            #k.kill()
         killSet.clear()
 
 def makeEnemy(images,pos):
@@ -219,10 +225,16 @@ def main():
   #enemy
   enemy = makeEnemy(man_seq,(200,200))
   enemy.do(Patrol((1000,100),(100,100),100))
-  fancyAction = enemy.do(ShootAtEnemy(50))
-  fancyAction.initVars(g.player)
+  #TODO: do shoot enemy if bState = 'alert'
+  #fancyAction = enemy.do(ShootAtEnemy(50))
+  #fancyAction.initVars(g.player)
+  
+  #enemy vision box
+  sBox = SightBox(enemy,g.player,(200,200),50,50)
+  #g.world.add(vBox)
+  g.world.collobjs.add(sBox)
 
-  #enemy
+  '''#enemy
   enemy = makeEnemy(man_seq,(200,300))
   enemy.do(Patrol((1000,200),(100,200),100))
   fancyAction = enemy.do(ShootAtEnemy(50))
@@ -233,7 +245,7 @@ def main():
   enemy.do(Patrol((1000,300),(100,300),100))
   fancyAction = enemy.do(ShootAtEnemy(50))
   fancyAction.initVars(g.player)
-
+  '''
   g.scroller.add(g.tilemap)
   g.scroller.add(g.world)
 
