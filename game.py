@@ -119,22 +119,29 @@ class MyMoveToWhileShooting(actions.base_actions.IntervalAction, tiles.RectMapCo
     #position is the sprite's center
     self.target.last = self.target.position
     self.target.cshape.center = new.center
-class MyMoveTo(actions.base_actions.IntervalAction, tiles.RectMapCollider):
+class MyMoveTo(actions.base_actions.IntervalAction):
   spos = 0
   def __init__(self,tpos,dur):
     super(MyMoveTo,self).__init__()
     self.tpos = np.array(tpos)
     self.duration = dur
+    self.lastT = 0
   def start(self):
       self.spos = np.array(self.target.position)
       self.delta = self.tpos - self.spos 
   def update(self,t):
+    dt = self.lastT - t #hack to use dt
+    self.lastT = t
     pos = self.target.position
-    dx,dy = (self.spos + self.delta*t) - pos
+    #dx,dy = (self.spos + self.delta*t) - pos
+    dx,dy = -self.delta*dt
     self.target.movementUpdate(dx,dy)
 
     #check for slow property
-    #get players bounding rectangle
+
+    self.target.dx = dx
+    self.target.dy = dy
+    '''#get players bounding rectangle
     last = self.target.get_rect()
     new = last.copy()
     new.x += dx
@@ -146,7 +153,7 @@ class MyMoveTo(actions.base_actions.IntervalAction, tiles.RectMapCollider):
     #position is the sprite's center
     self.target.last = self.target.position
     self.target.cshape.center = new.center
-
+    '''
 
 def symColl(o1,o2):
     coll(o1,o2)

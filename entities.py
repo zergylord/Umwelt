@@ -7,18 +7,19 @@ class HasHeading():
     A class must inherent this if it wants to use sight boxes,etc."""
     heading = np.array((1,0))
     def changeHeading(self,dx,dy):
-        if dy > 0: #moving up
-            self.heading = np.array((0,1))
-            if abs(dx) - abs(dy) > 0:#left
-              self.heading = np.array((-1,0))
-              if dx > 0: #moving right
-                self.heading = np.array((1,0))
-        else:#moving down
-            self.heading = np.array((0,-1))
-            if abs(dx) - abs(dy) > 0:#left
-              self.heading = np.array((-1,0))
-              if dx > 0:#right
-                self.heading = np.array((1,0))
+        if dy != 0 or dx != 0:
+            if dy > 0: #moving up
+                self.heading = np.array((0,1))
+                if abs(dx) - abs(dy) > 0:#left
+                  self.heading = np.array((-1,0))
+                  if dx > 0: #moving right
+                    self.heading = np.array((1,0))
+            else:#moving down
+                self.heading = np.array((0,-1))
+                if abs(dx) - abs(dy) > 0:#left
+                  self.heading = np.array((-1,0))
+                  if dx > 0:#right
+                    self.heading = np.array((1,0))
     
 class Being(CSprite,HasHeading):
     maxHealth = 100

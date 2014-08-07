@@ -12,7 +12,7 @@ class SpriteController(actions.Action,tiles.RectMapCollider):
   def start(self):
     self.target.velocity = (0,0)
     self.shootTimer = 0
-    self.heading = np.array((1,0))
+    #self.heading = np.array((1,0))
   def step(self,dt):
     dx,dy = self.target.velocity
     pos = self.target.position
@@ -23,17 +23,18 @@ class SpriteController(actions.Action,tiles.RectMapCollider):
       terr = 100
     #use dt and player facing
     if self.shoot and self.shootTimer <= 0:
-        bullet = Projectile(g.world,self.target.position+self.heading*40,16)
+        bullet = Projectile(g.world,self.target.position+self.target.heading*40,16)
         g.world.add(bullet)
         g.world.collobjs.add(bullet)
         #bullet.do(RandomController())
-        bullet.do(MyMoveTo(self.target.position+self.heading*500,1))
+        bullet.do(MyMoveTo(self.target.position+self.target.heading*500,1))
         self.shootTimer = 100
     else:
         self.shootTimer -= 1
     dx = (1+self.run*2)*terr*(self.right - self.left) * self.MOVE_SPEED * dt
     dy = (1+self.run*2)*terr*(self.up - self.down) * self.MOVE_SPEED * dt
-    if dx != 0 or dy != 0:
+    self.target.movementUpdate(dx,dy)
+    '''if dx != 0 or dy != 0:
       if dy > 0: #moving up
         self.heading = np.array((0,1))
         self.target.image = self.target.image_seq[1]
@@ -52,7 +53,10 @@ class SpriteController(actions.Action,tiles.RectMapCollider):
           if dx > 0:#right
             self.heading = np.array((1,0))
             self.target.image = self.target.image.get_transform(flip_x=True)
-    #check for slow property
+    '''
+    self.target.dx = dx
+    self.target.dy = dy
+    '''#check for slow property
     #get players bounding rectangle
     last = self.target.get_rect()
     new = last.copy()
@@ -65,7 +69,7 @@ class SpriteController(actions.Action,tiles.RectMapCollider):
     #position is the sprite's center
     self.target.last = self.target.position
     self.target.cshape.center = new.center
-
+    '''
 class ActorController(SpriteController, tiles.RectMapCollider):
     controlCooldown = 2
     curConCool = controlCooldown
