@@ -30,7 +30,8 @@ class ShootAtEnemy(actions.base_actions.IntervalAction, tiles.RectMapCollider):
   def update(self,t):
     dx = self.enemy.position[0] - self.target.position[0]
     dy = self.enemy.position[1] - self.target.position[1]
-    if dy > 0: #moving up
+    self.target.movementUpdate(dx,dy)
+    '''if dy > 0: #moving up
         self.heading = np.array((0,1))
         self.target.image = self.target.image_seq[1]
         if abs(dx) - abs(dy) > 0:#left
@@ -48,6 +49,7 @@ class ShootAtEnemy(actions.base_actions.IntervalAction, tiles.RectMapCollider):
           if dx > 0:#right
             self.heading = np.array((1,0))
             self.target.image = self.target.image.get_transform(flip_x=True)
+    '''
     shoot = True
     delta = np.array((dx,dy))
     exactHead = delta/np.linalg.norm(delta)
@@ -129,6 +131,7 @@ class MyMoveTo(actions.base_actions.IntervalAction, tiles.RectMapCollider):
   def update(self,t):
     pos = self.target.position
     dx,dy = (self.spos + self.delta*t) - pos
+    self.target.movementUpdate(dx,dy)
 
     #check for slow property
     #get players bounding rectangle

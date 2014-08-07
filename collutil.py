@@ -24,6 +24,9 @@ class Projectile(CSprite):
         image = seq[0]
         super(Projectile,self).__init__(image,pos[0],pos[1],radius)
         self.world = world
+    """for consistancy with Beings who use actions to update heading"""
+    def movementUpdate(self,dx,dy):
+        pass
     def update(self,dt):
         if self.state == 'coll':
             self.state = 'kill'
