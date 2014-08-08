@@ -50,19 +50,19 @@ class Being(CSprite,HasHeading):
     def takeHit(self,damage):
         self.health -= damage
 class SightBox():
-    def __init__(self,owner,enemy,pos,hWidth,hHeight):
+    def __init__(self,owner,enemy,hWidth,hHeight):
         self.state = 'norm'
-        self.cshape = cm.AARectShape(pos,hWidth,hHeight) 
+        self.sightWidth = hWidth
+        self.sightLength = hHeight
         self.owner = owner
         self.enemy = enemy
+        self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
+                self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
+                self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
     def update(self,dt):
-        #heading = np.array((1,0))#placeholder until beings contain their heading
-        sightLength = 100 #size of sight field along heading axis
-        sightWidth = 30 #size of nondirected portion (e.g. tunnel vision-ness) 
-        self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*sightLength,
-                sightWidth + abs(self.owner.heading[0])*sightLength,
-                sightWidth + abs(self.owner.heading[1])*sightLength)
-        #self.cshape.center = self.owner.position
+        self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
+                self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
+                self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
         if self.state == 'foundEnemy':
             self.state = 'colrem'
             self.owner.bState = 'alert'

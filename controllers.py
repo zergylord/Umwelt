@@ -6,7 +6,7 @@ import numpy as np
 import globals as g
 from enemies import *
 
-class SpriteController(actions.Action,tiles.RectMapCollider):
+class SpriteController(actions.Action):
   MOVE_SPEED = 1
   up,left,down,right,run,shoot = (0,0,0,0,0,0)
   def start(self):
@@ -34,43 +34,9 @@ class SpriteController(actions.Action,tiles.RectMapCollider):
     dx = (1+self.run*2)*terr*(self.right - self.left) * self.MOVE_SPEED * dt
     dy = (1+self.run*2)*terr*(self.up - self.down) * self.MOVE_SPEED * dt
     self.target.movementUpdate(dx,dy)
-    '''if dx != 0 or dy != 0:
-      if dy > 0: #moving up
-        self.heading = np.array((0,1))
-        self.target.image = self.target.image_seq[1]
-        if abs(dx) - abs(dy) > 0:#left
-          self.heading = np.array((-1,0))
-          self.target.image = self.target.image_seq[2]
-          if dx > 0: #moving right
-            self.heading = np.array((1,0))
-            self.target.image = self.target.image.get_transform(flip_x=True)
-      else:#moving down
-        self.heading = np.array((0,-1))
-        self.target.image = self.target.image_seq[0]
-        if abs(dx) - abs(dy) > 0:#left
-          self.heading = np.array((-1,0))
-          self.target.image = self.target.image_seq[2]
-          if dx > 0:#right
-            self.heading = np.array((1,0))
-            self.target.image = self.target.image.get_transform(flip_x=True)
-    '''
     self.target.dx = dx
     self.target.dy = dy
-    '''#check for slow property
-    #get players bounding rectangle
-    last = self.target.get_rect()
-    new = last.copy()
-    new.x += dx
-    new.y += dy
-
-    #collider
-    dx, dy = self.target.velocity = self.collide_map(g.tilemap,last,new,dy,dx)
-    
-    #position is the sprite's center
-    self.target.last = self.target.position
-    self.target.cshape.center = new.center
-    '''
-class ActorController(SpriteController, tiles.RectMapCollider):
+class ActorController(SpriteController):
     controlCooldown = 2
     curConCool = controlCooldown
     def step(self,dt): 
@@ -90,7 +56,7 @@ class ActorController(SpriteController, tiles.RectMapCollider):
                 self.target.state = 'control_target'
                 print 'im controling!'
 
-class RandomController(SpriteController, tiles.RectMapCollider):
+class RandomController(SpriteController):
     decisionTime = 2
     decisionTimeLeft = decisionTime
     def step(self,dt):
