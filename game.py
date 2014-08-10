@@ -1,3 +1,9 @@
+#!/usr/bin/python
+"""
+contains the main game loop, as well as the obj collision loop. In this loop
+all collidable objects are updated.
+"""
+
 import pyglet
 from pyglet.window import key
 
@@ -24,7 +30,6 @@ def coll(o1,o2):
     if isinstance(o1,SightBox): 
         if o2 == o1.enemy:
             o1.state = 'foundEnemy'
-            print 'rarrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
         
 class World(cocos.layer.ScrollableLayer):
     controlNext = False
@@ -67,59 +72,64 @@ class World(cocos.layer.ScrollableLayer):
         killSet.clear()
 
 def makeEnemy(images,pos):
-  enemy = BasicEnemy(images,pos)
-  g.world.add(enemy)
-  g.world.collobjs.add(enemy)
-  return enemy
+    enemy = BasicEnemy(images,pos)
+    g.world.add(enemy)
+    g.world.collobjs.add(enemy)
+    return enemy
 
 def main():
-  from cocos.director import director
-  director.init(width=800,height=600, do_not_scale=True, resizable=True)
+    from cocos.director import director
+    director.init(width=800,height=600, do_not_scale=True, resizable=True)
 
-  g.scroller = layer.ScrollingManager()
-  g.tilemap = tiles.load('desert.tmx')['Level0']
-  g.tilemap.visible = 1
+    g.scroller = layer.ScrollingManager()
+    g.tilemap = tiles.load('desert.tmx')['Level0']
+    g.tilemap.visible = 1
 
-  g.world = World()
-  man = pyglet.image.load('man.png')
-  man_seq = pyglet.image.ImageGrid(man,1,4)
-  actor = Hero(man_seq,(50,50))
-  g.player = actor
-  g.world.add(actor)
-  g.world.collobjs.add(actor)
-  actor.do(ActorController())
-  
-  #enemy
-  enemy = makeEnemy(man_seq,(200,100))
-  enemy.do(Patrol((1000,100),(200,100),100))
-  #enemy vision box
-  sBox = SightBox(enemy,g.player,50,50)
-  g.world.collobjs.add(sBox)
+    g.world = World()
+    man = pyglet.image.load('man.png')
+    man_seq = pyglet.image.ImageGrid(man,1,4)
+    actor = Hero(man_seq,(50,50))
+    g.player = actor
+    g.world.add(actor)
+    g.world.collobjs.add(actor)
+    actor.do(ActorController())
 
-  #enemy
-  enemy = makeEnemy(man_seq,(100,200))
-  enemy.do(Patrol((1000,200),(100,200),100))
-  #enemy vision box
-  sBox = SightBox(enemy,g.player,50,50)
-  g.world.collobjs.add(sBox)
+    #enemy
+    enemy = makeEnemy(man_seq,(200,100))
+    enemy.do(Patrol((1000,100),(200,100),100))
+    #fancyAction = enemy.do(FollowBeing(100))
+    #fancyAction.initVars(g.player)
+    #enemy vision box
+    sBox = SightBox(enemy,g.player,50,50)
+    g.world.collobjs.add(sBox)
+    lBox = SightLimitBox(enemy,g.player,100,100)
+    g.world.collobjs.add(lBox)
 
-  #enemy
-  enemy = makeEnemy(man_seq,(50,300))
-  enemy.do(Patrol((1000,300),(50,300),100))
-  #enemy vision box
-  sBox = SightBox(enemy,g.player,50,50)
-  g.world.collobjs.add(sBox)
+    '''
+    #enemy
+    enemy = makeEnemy(man_seq,(100,200))
+    enemy.do(Patrol((1000,200),(100,200),100))
+    #enemy vision box
+    sBox = SightBox(enemy,g.player,50,50)
+    g.world.collobjs.add(sBox)
 
-  g.scroller.add(g.tilemap)
-  g.scroller.add(g.world)
+    #enemy
+    enemy = makeEnemy(man_seq,(50,300))
+    enemy.do(Patrol((1000,300),(50,300),100))
+    #enemy vision box
+    sBox = SightBox(enemy,g.player,50,50)
+    g.world.collobjs.add(sBox)
+    '''
+    g.scroller.add(g.tilemap)
+    g.scroller.add(g.world)
 
-  main_scene = cocos.scene.Scene(g.scroller)
+    main_scene = cocos.scene.Scene(g.scroller)
 
-  g.keyboard = key.KeyStateHandler()
-  director.window.push_handlers(g.keyboard)
+    g.keyboard = key.KeyStateHandler()
+    director.window.push_handlers(g.keyboard)
 
-  director.run(main_scene)
+    director.run(main_scene)
 
 if __name__ == '__main__':
-  main()
+    main()
 

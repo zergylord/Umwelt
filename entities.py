@@ -22,6 +22,9 @@ class HasHeading():
                     self.heading = np.array((1,0))
     
 class Being(CSprite,HasHeading):
+    """fundamental entity that has a sprite seequence
+    hp, and a heading
+    """
     maxHealth = 100
     health = maxHealth
     image_seq = ()
@@ -49,21 +52,57 @@ class Being(CSprite,HasHeading):
             print 'I died :-('
     def takeHit(self,damage):
         self.health -= damage
+class Hero(Being):
+    def __init__(self,image,pos):
+        super(Hero,self).__init__(image,pos,16)
 class SightBox():
+    """ fundamental entity that isn't rendered and is currently used
+    for line of sight via object collision.
+    """
     def __init__(self,owner,enemy,hWidth,hHeight):
         self.state = 'norm'
-        self.sightWidth = hWidth
-        self.sightLength = hHeight
+        self.active = False
+        self.sightWidth = hWidth #off dimension size
+        self.sightLength = hHeight #main dimension size (normally bigger)
         self.owner = owner
         self.enemy = enemy
         self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
                 self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
                 self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
-    def update(self,dt):
+    def __updatePosition__(self):
         self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
                 self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
                 self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
-        if self.state == 'foundEnemy':
-            self.state = 'colrem'
-            self.owner.bState = 'alert'
-            print 'I see you!'
+    def update(self,dt):
+        self.__updatePosition__()
+        self.active = self.owner.bState == 'looking'
+        if self.active:
+            #print 'active sight!'
+            if self.state == 'foundEnemy':
+                self.state = 'notFoundEnemy'
+                self.owner.bState = 'alert'
+                print 'I see you!'
+
+class SightLimitBox(SightBox):
+    """same as the sightbox, but sets owners state from alert to normal once the enemy
+    ISNT colliding with it. Typically used in conjunction with a smaller sightbox to determine
+    when the owner has lost track of its enemy
+    """
+    timeLost = 0
+    def update(self,dt):
+        self.__updatePosition__()
+        
+        self.active = self.owner.bState == 'attacking'
+        if self.active:
+            #print 'active sight limit!'
+            if self.state == 'foundEnemy':
+                self.state = 'notFoundEnemy' #collision must set foundEnemy everyframe
+            else:
+                self.timeLost += 1
+                #TODO:have this activate 'searching' behavior
+                print 'where are you?'
+                if self.timeLost >= 10:
+                    self.timeLost = 0
+                    self.owner.bState = 'unalert'
+                    print 'I lost you! :-('
+
