@@ -1,4 +1,4 @@
-from collutil import *
+from skills import *
 from entities import *
 from game import *
 import globals as g

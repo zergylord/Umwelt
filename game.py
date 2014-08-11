@@ -12,7 +12,7 @@ import globals as g
 
 import cocos
 from cocos import tiles,actions,layer
-from collutil import *
+from skills import *
 from enemies import *
 from entities import *
 from actions import *
@@ -75,6 +75,11 @@ def makeEnemy(images,pos):
     enemy = BasicEnemy(images,pos)
     g.world.add(enemy)
     g.world.collobjs.add(enemy)
+    #enemy vision box
+    sBox = SightBox(enemy,g.player,20,100)
+    g.world.collobjs.add(sBox)
+    lBox = SightLimitBox(enemy,g.player,200,200)
+    g.world.collobjs.add(lBox)
     return enemy
 
 def main():
@@ -97,17 +102,6 @@ def main():
     #enemy
     enemy = makeEnemy(man_seq,(200,100))
     enemy.curMov = enemy.do(Patrol((1000,100),(200,100)))
-    #fancyAction = enemy.do(FollowBeing(100))
-    #fancyAction.initVars(g.player)
-    #enemy vision box
-    sBox = SightBox(enemy,g.player,50,50)
-    g.world.collobjs.add(sBox)
-    cl = layer.ColorLayer(*(120,32,120,255),width=sBox.sightWidth,
-            height=sBox.sightLength)
-    cl.position = (sBox.cshape.center)
-    g.world.add(cl)
-    lBox = SightLimitBox(enemy,g.player,100,100)
-    g.world.collobjs.add(lBox)
 
     '''
     #enemy

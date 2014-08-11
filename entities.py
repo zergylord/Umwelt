@@ -1,6 +1,39 @@
-from collutil import *
+from skills import *
 from cocos import collision_model as cm
 import numpy as np
+class CSprite(cocos.sprite.Sprite,tiles.RectMapCollider):
+    speed = 100
+    def __init__(self,image,center_x,center_y,radius):
+        super(CSprite,self).__init__(image)
+        self.dx = 0
+        self.dy = 0
+        self.state = 'norm'
+        self.position = (center_x,center_y)
+        self.last = (center_x,center_y)
+        self.cshape = cm.AARectShape(eu.Vector2(center_x,center_y),radius,radius)
+    def update(self,dt):
+        """check for object collision, if not then apply movement and check for
+        grid collision"""
+        #object collider
+        if self.state == 'coll':
+            self.state = 'norm'
+            self.cshape.center = self.position #revert collision body back to prev pos
+        else:
+            self.position = self.cshape.center #accept collision body as the new pos
+            #map collider
+            last = self.get_rect()
+            new = last.copy()
+            new.x += self.dx
+            new.y += self.dy
+            self.collide_map(g.tilemap,last,new,self.dy,self.dx)
+            self.dx = 0
+            self.dy = 0
+
+            #---position is the sprite's center
+            self.last = self.position
+            self.cshape.center = new.center
+            #self.position = self.cshape.center
+        
 class HasHeading():
     """Interface that gives a class a heading property, and
     the ability to recalculate heading given dx,dy
@@ -57,7 +90,8 @@ class Hero(Being):
         super(Hero,self).__init__(image,pos,16)
 class SightBox():
     """ fundamental entity that isn't rendered and is currently used
-    for line of sight via object collision.
+    for line of sight via object collision. Only uses 4 directional
+    heading since collision only supports axis alligned Rects
     """
     def __init__(self,owner,enemy,hWidth,hHeight):
         self.state = 'norm'
@@ -66,13 +100,13 @@ class SightBox():
         self.sightLength = hHeight #main dimension size (normally bigger)
         self.owner = owner
         self.enemy = enemy
-        self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
-                self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
-                self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
+        self.__updatePosition__()
     def __updatePosition__(self):
         self.cshape = cm.AARectShape(self.owner.position+self.owner.heading*self.sightLength,
-                self.sightWidth + abs(self.owner.heading[0])*self.sightLength,
-                self.sightWidth + abs(self.owner.heading[1])*self.sightLength)
+                abs(self.owner.heading[1])*self.sightWidth 
+                + abs(self.owner.heading[0])*self.sightLength,
+               abs(self.owner.heading[0])*self.sightWidth 
+               + abs(self.owner.heading[1])*self.sightLength)
     def update(self,dt):
         self.__updatePosition__()
         self.active = self.owner.bState == 'looking'
