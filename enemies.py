@@ -8,7 +8,7 @@ class BasicEnemy(Being):
         self.shootTimer = 100;
         self.controlled = False
         super(BasicEnemy,self).__init__(image,pos,16)
-    #TODO:override default 'do' function s.t. curAtk/Mov are set automatically
+        self.addSkill(SpearThrow())
     def update(self,dt):
         super(BasicEnemy,self).update(dt)
         if self.bState == 'alert':

@@ -1,5 +1,5 @@
 #TODO: update controllers s.t. being speed is used
-from collutil import *
+from skills import *
 from entities import *
 from game import *
 from cocos import tiles,actions
@@ -9,11 +9,11 @@ from enemies import *
 
 class SpriteController(actions.Action):
   MOVE_SPEED = 1
-  up,left,down,right,run,shoot = (0,0,0,0,0,0)
+  up,left,down,right,run,shoot,throwMine = (0,0,0,0,0,0,0)
   def start(self):
+    self.target.addSkill(SpearThrow())
+    self.target.addSkill(MineThrow())
     self.target.velocity = (0,0)
-    self.shootTimer = 0
-    #self.heading = np.array((1,0))
   def step(self,dt):
     dx,dy = self.target.velocity
     pos = self.target.position
@@ -23,15 +23,10 @@ class SpriteController(actions.Action):
     else:
       terr = 100
     #use dt and player facing
-    if self.shoot and self.shootTimer <= 0:
-        bullet = Projectile(g.world,self.target.position+self.target.heading*40,16)
-        g.world.add(bullet)
-        g.world.collobjs.add(bullet)
-        #bullet.do(RandomController())
-        bullet.do(MyMoveTo(self.target.position+self.target.heading*500))
-        self.shootTimer = 100
-    else:
-        self.shootTimer -= 1
+    if self.shoot:
+        self.target.skill['sThrow'].use(self.target.position+self.target.heading*500)
+    if self.throwMine:
+        self.target.skill['mThrow'].use(self.target.position+self.target.heading*500)
     dx = (1+self.run*2)*terr*(self.right - self.left) * self.MOVE_SPEED * dt
     dy = (1+self.run*2)*terr*(self.up - self.down) * self.MOVE_SPEED * dt
     self.target.movementUpdate(dx,dy)
@@ -45,6 +40,7 @@ class ActorController(SpriteController):
         #check input
         self.run = g.keyboard[key.LCTRL] 
         self.shoot = g.keyboard[key.SPACE]
+        self.throwMine = g.keyboard[key.X]
         self.right = g.keyboard[key.RIGHT]
         self.left = g.keyboard[key.LEFT]
         self.up = g.keyboard[key.UP]
@@ -57,6 +53,7 @@ class ActorController(SpriteController):
                 self.target.state = 'control_target'
                 print 'im controling!'
 
+'''DEPRECIATED
 class RandomController(SpriteController):
     decisionTime = 2
     decisionTimeLeft = decisionTime
@@ -72,3 +69,4 @@ class RandomController(SpriteController):
             self.left = move == 1
             self.up = move == 2
             self.down = move == 3
+'''

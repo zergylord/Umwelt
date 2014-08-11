@@ -25,7 +25,8 @@ def coll(o1,o2):
     if isinstance(o1,CSprite) and isinstance(o2,CSprite): #change to a more general 'collidable interface
         o1.state = 'coll'
         o1.cshape.center = o1.position
-    if isinstance(o1,Projectile) and isinstance(o2,Being):
+    if isinstance(o1,Damaging) and isinstance(o2,Being):
+        print 'took damage'
         o2.health -= o1.damage
     if isinstance(o1,SightBox): 
         if o2 == o1.enemy:

@@ -11,6 +11,23 @@ class CSprite(cocos.sprite.Sprite,tiles.RectMapCollider):
         self.position = (center_x,center_y)
         self.last = (center_x,center_y)
         self.cshape = cm.AARectShape(eu.Vector2(center_x,center_y),radius,radius)
+    def resolveMovement(self):
+        self.position = self.cshape.center #accept collision body as the new pos
+        #map collider
+        last = self.get_rect()
+        new = last.copy()
+        new.x += self.dx
+        new.y += self.dy
+        curDelta = (self.dx,self.dy)
+        dx,dy = self.collide_map(g.tilemap,last,new,self.dy,self.dx)
+        self.dx = 0
+        self.dy = 0
+        #(collision?,new rectangle)
+        return (curDelta[0] != dx or curDelta[1] != dy,new)
+
+    """for consistancy with Beings who use actions to update heading"""
+    def movementUpdate(self,dx,dy):
+        pass
     def update(self,dt):
         """check for object collision, if not then apply movement and check for
         grid collision"""
@@ -19,16 +36,7 @@ class CSprite(cocos.sprite.Sprite,tiles.RectMapCollider):
             self.state = 'norm'
             self.cshape.center = self.position #revert collision body back to prev pos
         else:
-            self.position = self.cshape.center #accept collision body as the new pos
-            #map collider
-            last = self.get_rect()
-            new = last.copy()
-            new.x += self.dx
-            new.y += self.dy
-            self.collide_map(g.tilemap,last,new,self.dy,self.dx)
-            self.dx = 0
-            self.dy = 0
-
+            coll,new = self.resolveMovement()
             #---position is the sprite's center
             self.last = self.position
             self.cshape.center = new.center
@@ -64,7 +72,12 @@ class Being(CSprite,HasHeading):
     def __init__(self,image_seq,pos,radius):
         self.image_seq = image_seq
         image = image_seq[0]
+        self.skill = dict()
         super(Being,self).__init__(image,pos[0],pos[1],radius)
+    #the skill analog of the do action function
+    def addSkill(self,skill):
+        skill.target = self
+        self.skill[skill.name] = skill
     """called by (all?) actions executed by Being"""
     def movementUpdate(self,dx,dy):
         self.changeHeading(dx,dy)
@@ -79,6 +92,8 @@ class Being(CSprite,HasHeading):
             self.image = self.image.get_transform(flip_x=True)
     def update(self,dt):
         super(Being,self).update(dt)
+        for s in self.skill.values():
+            s.update(dt)
         if not self.state == 'kill' and self.health <= 0:
             self.state = 'kill'
             self.stop()

@@ -18,22 +18,8 @@ class ShootAtEnemy(actions.base_actions.Action):
     def done(self):
         return False
     def step(self,dt):
-        dx = self.enemy.position[0] - self.target.position[0]
-        dy = self.enemy.position[1] - self.target.position[1]
-        self.target.movementUpdate(dx,dy)
+        self.target.skill['sThrow'].use(self.enemy.position)
 
-        shoot = True
-        delta = np.array((dx,dy))
-        exactHead = delta/np.linalg.norm(delta)
-        if shoot and self.target.shootTimer <= 0:
-            bullet = Projectile(g.world,self.target.position+exactHead*50,16)
-            g.world.add(bullet)
-            g.world.collobjs.add(bullet)
-            #bullet.do(RandomController())
-            bullet.do(MyMoveTo(self.target.position+exactHead*500))
-            self.target.shootTimer = 100
-        else:
-            self.target.shootTimer -= 1
 class FollowBeing(actions.base_actions.Action):
     def initVars(self,tBeing):
         self.tBeing = tBeing
