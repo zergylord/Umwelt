@@ -96,12 +96,16 @@ def main():
 
     #enemy
     enemy = makeEnemy(man_seq,(200,100))
-    enemy.do(Patrol((1000,100),(200,100),100))
+    enemy.curMov = enemy.do(Patrol((1000,100),(200,100)))
     #fancyAction = enemy.do(FollowBeing(100))
     #fancyAction.initVars(g.player)
     #enemy vision box
     sBox = SightBox(enemy,g.player,50,50)
     g.world.collobjs.add(sBox)
+    cl = layer.ColorLayer(*(120,32,120,255),width=sBox.sightWidth,
+            height=sBox.sightLength)
+    cl.position = (sBox.cshape.center)
+    g.world.add(cl)
     lBox = SightLimitBox(enemy,g.player,100,100)
     g.world.collobjs.add(lBox)
 

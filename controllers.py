@@ -1,3 +1,4 @@
+#TODO: update controllers s.t. being speed is used
 from collutil import *
 from entities import *
 from game import *
@@ -27,7 +28,7 @@ class SpriteController(actions.Action):
         g.world.add(bullet)
         g.world.collobjs.add(bullet)
         #bullet.do(RandomController())
-        bullet.do(MyMoveTo(self.target.position+self.target.heading*500,1))
+        bullet.do(MyMoveTo(self.target.position+self.target.heading*500))
         self.shootTimer = 100
     else:
         self.shootTimer -= 1

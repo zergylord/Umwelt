@@ -6,6 +6,7 @@ import cocos.collision_model as cm
 import pyglet.image
 
 class CSprite(cocos.sprite.Sprite,tiles.RectMapCollider):
+    speed = 100
     def __init__(self,image,center_x,center_y,radius):
         super(CSprite,self).__init__(image)
         self.dx = 0
@@ -45,6 +46,7 @@ class Projectile(CSprite):
         image = seq[0]
         super(Projectile,self).__init__(image,pos[0],pos[1],radius)
         self.world = world
+        self.speed = 1000
     """for consistancy with Beings who use actions to update heading"""
     def movementUpdate(self,dx,dy):
         pass
