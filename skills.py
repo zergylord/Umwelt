@@ -68,10 +68,8 @@ class SpearThrow(Skill):
             exactHead = delta/np.linalg.norm(delta)
             self.timer = self.cooldown
 
-            man = pyglet.image.load('man.png')
-            seq =  pyglet.image.ImageGrid(man,1,4)
-            image = seq[0]
-            bullet = Projectile(g.world,self.target.position+exactHead*50,16,image)
+            image = pyglet.image.load('bullet.png')
+            bullet = Projectile(g.world,self.target.position+exactHead*50,4,image)
             g.world.add(bullet)
             g.world.collobjs.add(bullet)
             bullet.do(MyMoveTo(self.target.position+exactHead*500))
@@ -111,9 +109,7 @@ class Projectile(CSprite,Damaging):
 class Mine(Projectile):
     damage = 25
     def __init__(self,world,pos):
-        man = pyglet.image.load('man.png')
-        seq =  pyglet.image.ImageGrid(man,1,4)
-        image = seq[0]
+        image = pyglet.image.load('car.png')
         super(Mine,self).__init__(world,pos,16,image)
         self.speed = 100
     def killCond(self):
