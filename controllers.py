@@ -9,10 +9,11 @@ from enemies import *
 
 class SpriteController(actions.Action):
   MOVE_SPEED = 1
-  up,left,down,right,run,shoot,throwMine = (0,0,0,0,0,0,0)
+  up,left,down,right,run,shoot,throwMine,explode = (0,0,0,0,0,0,0,0)
   def start(self):
     self.target.addSkill(SpearThrow())
     self.target.addSkill(MineThrow())
+    self.target.addSkill(Explode(96))
     self.target.velocity = (0,0)
   def step(self,dt):
     dx,dy = self.target.velocity
@@ -27,6 +28,8 @@ class SpriteController(actions.Action):
         self.target.skill['sThrow'].use(self.target.position+self.target.heading*500)
     if self.throwMine:
         self.target.skill['mThrow'].use(self.target.position+self.target.heading*500)
+    if self.explode:
+        self.target.skill['explode'].use()
     dx = (1+self.run*2)*terr*(self.right - self.left) * self.MOVE_SPEED * dt
     dy = (1+self.run*2)*terr*(self.up - self.down) * self.MOVE_SPEED * dt
     self.target.movementUpdate(dx,dy)
@@ -40,7 +43,8 @@ class ActorController(SpriteController):
         #check input
         self.run = g.keyboard[key.LCTRL] 
         self.shoot = g.keyboard[key.SPACE]
-        self.throwMine = g.keyboard[key.X]
+        self.throwMine = g.keyboard[key.M]
+        self.explode = g.keyboard[key.X]
         self.right = g.keyboard[key.RIGHT]
         self.left = g.keyboard[key.LEFT]
         self.up = g.keyboard[key.UP]
