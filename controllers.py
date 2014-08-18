@@ -35,20 +35,32 @@ class SpriteController(actions.Action):
     self.target.movementUpdate(dx,dy)
     self.target.dx = dx
     self.target.dy = dy
+def useKeypress(key):
+    '''if key has been pressed and released, then 'use up' the release and return true'''
+    if g.released.get(key):
+        g.released[key] = False
+        return True
+    return False
 class ActorController(SpriteController):
     controlCooldown = 2
     curConCool = controlCooldown
     def step(self,dt): 
         super(ActorController,self).step(dt)
         #check input
-        self.run = g.keyboard[key.LCTRL] 
         self.shoot = g.keyboard[key.SPACE]
         self.throwMine = g.keyboard[key.M]
         self.explode = g.keyboard[key.X]
+
+        self.run = g.keyboard[key.LCTRL] 
         self.right = g.keyboard[key.RIGHT]
         self.left = g.keyboard[key.LEFT]
         self.up = g.keyboard[key.UP]
         self.down = g.keyboard[key.DOWN]
+        if useKeypress(key.P):
+            if g.scroller.scale == 2:
+                g.scroller.set_scale(1)
+            else:
+                g.scroller.set_scale(2)
         if not isinstance(self.target,BasicEnemy):
             g.scroller.set_focus(self.target.x,self.target.y)
             self.curConCool -= dt

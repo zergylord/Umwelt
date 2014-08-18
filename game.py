@@ -83,12 +83,23 @@ def makeEnemy(images,pos):
     g.world.collobjs.add(lBox)
     return enemy
 
+class MainLayer(layer.ScrollingManager):
+    '''Pyglet already handles keypresses, but meh'''
+    is_event_handler = True
+    def on_key_press(self,key,modifiers):
+        g.pressed[key] = True
+    def on_key_release(self,key,modifiers):
+        g.pressed[key] = False
+        g.released[key] = True #controller must reset to False upon using
 def main():
     from cocos.director import director
-    director.init(width=800,height=600, do_not_scale=True, resizable=True)
+    director.init(width=800,height=600, do_not_scale=False, resizable=True)
 
-    g.scroller = layer.ScrollingManager()
-    g.tilemap = tiles.load('desert.tmx')['Level0']
+    g.pressed = dict()
+    g.released = dict()
+    g.scroller = MainLayer()
+    g.scroller.set_scale(2)
+    g.tilemap = tiles.load_tmx('desert.tmx')['Level0']
     g.tilemap.visible = 1
 
     g.world = World()
