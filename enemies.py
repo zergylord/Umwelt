@@ -6,7 +6,7 @@ from cocos.audio.effect import Effect
 import globals as g
 class BasicEnemy(Being,EventDispatcher):
     def __init__(self,image,pos,patEnd):
-        self.noise = .1
+        self.noise = 0
         self.lastKnownLoc = [] #when set, will goto here when investigating
         self.patA = pos
         self.patB = patEnd

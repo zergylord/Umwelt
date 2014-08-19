@@ -86,6 +86,16 @@ def makeEnemy(images,pos,patEnd):
     g.world.collobjs.add(lBox)
     return enemy
 
+def makeCharAni(fileName):
+    spriteSheet = pyglet.image.load(fileName)
+    sprite_seq = pyglet.image.ImageGrid(spriteSheet,4,3)
+    sprite_ani = []
+
+    dur = .3
+    for i in range(4):
+        sprite_ani.append(pyglet.image.Animation.from_image_sequence(sprite_seq[3*i:3*i+2],dur))
+    return sprite_ani
+
 class MainLayer(layer.ScrollingManager):
     '''Pyglet already handles keypresses, but meh'''
     is_event_handler = True
@@ -114,15 +124,9 @@ def main():
     g.world = World()
     man = pyglet.image.load('man.png')
     man_seq = pyglet.image.ImageGrid(man,1,4)
-    jawa = pyglet.image.load('Jawa.png')
-    jawa_seq = pyglet.image.ImageGrid(jawa,4,3)
-    jawa_ani = []
-
-    dur = .3
-    for i in range(4):
-        jawa_ani.append(pyglet.image.Animation.from_image_sequence(jawa_seq[3*i:3*i+2],dur))
+    
     #actor = Hero(jawa_seq[::3],(50,50))
-    actor = Hero(jawa_ani,(50,50))
+    actor = Hero(makeCharAni('Jawa.png'),(50,50))
     g.player = actor
     g.team[0].add(actor)
     g.world.add(actor)
@@ -130,8 +134,9 @@ def main():
     actor.do(ActorController())
 
     #enemy
-    enemy = makeEnemy(man_seq,(200,100),(1000,100))
-    enemy = makeEnemy(man_seq,(1000,200),(200,200))
+    enemy = makeEnemy(makeCharAni('pirateMale.png'),(200,100),(1000,100))
+    enemy = makeEnemy(makeCharAni('pirateFemale.png'),(1000,200),(200,200))
+    enemy = makeEnemy(makeCharAni('pirateFemale.png'),(1100,200),(1100,1000))
 
     '''
     #enemy
