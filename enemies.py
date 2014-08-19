@@ -25,9 +25,9 @@ class BasicEnemy(Being,EventDispatcher):
     def on_alert(self,ally):
         '''respond to an ally becoming alert'''
         if self.bState == 'looking':
-            self.bState = 'alert'
+            self.bState = 'investigating'
             self.lastKnownLoc = ally.position
-        print 'your alert!'
+            print 'your alert!'
     def update(self,dt):
         super(BasicEnemy,self).update(dt)
         if self.bState == 'alert':
@@ -80,7 +80,7 @@ class BasicEnemy(Being,EventDispatcher):
     def takeHit(self,damage):
         super(BasicEnemy,self).takeHit(damage)
         if self.bState == 'looking':
-            self.bState = 'alert'
+            self.bState = 'investigating'
 #events generated:
 BasicEnemy.register_event_type('on_alert')
 #don't remember why, but I need this...
