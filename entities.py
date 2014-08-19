@@ -42,7 +42,9 @@ class HasHeading():
     the ability to recalculate heading given dx,dy
     A class must inherent this if it wants to use sight boxes,etc."""
     heading = np.array((1,0))
+    prevHeading = np.array((1,0))
     def changeHeading(self,dx,dy):
+        self.prevHeading = self.heading
         if dy != 0 or dx != 0:
             if dy > 0: #moving up
                 self.heading = np.array((0,1))
@@ -77,15 +79,16 @@ class Being(CSprite,HasHeading):
     """called by (all?) actions executed by Being"""
     def movementUpdate(self,dx,dy):
         self.changeHeading(dx,dy)
-        if all(self.heading == (0,1)):#up
-            self.image = self.image_seq[1]
-        elif all(self.heading == (-1,0)):#left
-            self.image = self.image_seq[2]
-        elif all(self.heading == (0,-1)):#down
-            self.image = self.image_seq[0]
-        elif all(self.heading == (1,0)):#right
-            self.image = self.image_seq[2]
-            self.image = self.image.get_transform(flip_x=True)
+        if (self.heading != self.prevHeading).any():
+            if all(self.heading == (0,1)):#up
+                self.image = self.image_seq[1]
+            elif all(self.heading == (-1,0)):#left
+                self.image = self.image_seq[2]
+            elif all(self.heading == (0,-1)):#down
+                self.image = self.image_seq[0]
+            elif all(self.heading == (1,0)):#right
+                self.image = self.image_seq[2]
+                self.image = self.image.get_transform(flip_x=True)
     def update(self,dt):
         super(Being,self).update(dt)
         for s in self.skill.values():
@@ -104,6 +107,17 @@ class Hero(Being):
     def __init__(self,image,pos):
         super(Hero,self).__init__(image,pos,16)
         self.team = 0
+    def movementUpdate(self,dx,dy):
+        self.changeHeading(dx,dy)
+        if (self.heading != self.prevHeading).any():
+            if all(self.heading == (0,1)):#up
+                self.image = self.image_seq[0]
+            elif all(self.heading == (-1,0)):#left
+                self.image = self.image_seq[2]
+            elif all(self.heading == (0,-1)):#down
+                self.image = self.image_seq[3]
+            elif all(self.heading == (1,0)):#right
+                self.image = self.image_seq[1]
 class SightBox():
     """ fundamental entity that isn't rendered and is currently used
     for line of sight via object collision. Only uses 4 directional

@@ -114,7 +114,15 @@ def main():
     g.world = World()
     man = pyglet.image.load('man.png')
     man_seq = pyglet.image.ImageGrid(man,1,4)
-    actor = Hero(man_seq,(50,50))
+    jawa = pyglet.image.load('Jawa.png')
+    jawa_seq = pyglet.image.ImageGrid(jawa,4,3)
+    jawa_ani = []
+
+    dur = .3
+    for i in range(4):
+        jawa_ani.append(pyglet.image.Animation.from_image_sequence(jawa_seq[3*i:3*i+2],dur))
+    #actor = Hero(jawa_seq[::3],(50,50))
+    actor = Hero(jawa_ani,(50,50))
     g.player = actor
     g.team[0].add(actor)
     g.world.add(actor)
