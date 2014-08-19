@@ -21,7 +21,7 @@ class Damaging():
     damage = 0
 class Projectile(CSprite,Damaging):
     damage = 25
-    speed = 1000
+    speed = 400
     def __init__(self,world,pos,radius,image):
         #man = pyglet.image.load('man.png')
         #seq =  pyglet.image.ImageGrid(man,1,4)
@@ -127,6 +127,7 @@ class SpearThrow(Skill):
         self.name = 'sThrow'
         self.timer = 0
         self.cooldown = 1
+        self.noise = 1
     def use(self,tpos):
         if self.timer <= 0:
             dx = tpos[0] - self.target.position[0]
@@ -142,5 +143,5 @@ class SpearThrow(Skill):
             bullet = Projectile(g.world,self.target.position+exactHead*50,4,image)
             g.world.add(bullet)
             g.world.collobjs.add(bullet)
-            bullet.do(MyMoveTo(self.target.position+exactHead*500))
+            bullet.do(MyMoveTo(self.target.position+exactHead*500,self.noise))
 

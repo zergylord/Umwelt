@@ -24,10 +24,12 @@ def symColl(o1,o2):
 def coll(o1,o2):
     if isinstance(o1,CSprite) and isinstance(o2,CSprite): #change to a more general 'collidable interface
         o1.state = 'coll'
-        o1.cshape.center = o1.position
+        o1.cshape.center = o1.position - np.array((o1.dx,o1.dy))*2
+        if isinstance(o1,Being) and isinstance(o2,Being):
+            o1.takeHit(0)#hack for alerting enemies
     if isinstance(o1,Damaging) and isinstance(o2,Being):
         print 'took damage'
-        o2.health -= o1.damage
+        o2.takeHit(o1.damage)
     if isinstance(o1,SightBox): 
         if o2 == o1.enemy:
             o1.state = 'foundEnemy'
@@ -68,12 +70,13 @@ class World(cocos.layer.ScrollableLayer):
             self.collobjs.remove(k)
         colremSet.clear()
         for k in killSet:
-            g.world.remove(k)
+            k.kill()
+            #g.world.remove(k)
             self.collobjs.remove(k)
         killSet.clear()
 
-def makeEnemy(images,pos):
-    enemy = BasicEnemy(images,pos)
+def makeEnemy(images,pos,patEnd):
+    enemy = BasicEnemy(images,pos,patEnd)
     g.world.add(enemy)
     g.world.collobjs.add(enemy)
     #enemy vision box
@@ -93,10 +96,16 @@ class MainLayer(layer.ScrollingManager):
         g.released[key] = True #controller must reset to False upon using
 def main():
     from cocos.director import director
-    director.init(width=800,height=600, do_not_scale=False, resizable=True)
+    director.init(width=800,height=600, do_not_scale=False, resizable=True,audio_backend='sdl')
 
     g.pressed = dict()
     g.released = dict()
+    g.team = []
+    g.team.append(set())#team 0 is the player/pet
+    g.team.append(set())#team 1 are the 'intelligent' enemies
+    g.team.append(set())#team 2 attack everything e.g. beasts
+    g.team.append(set())#team 3 attack nothing unless provoked (then switch teams?)
+
     g.scroller = MainLayer()
     g.scroller.set_scale(2)
     g.tilemap = tiles.load_tmx('desert.tmx')['Level0']
@@ -107,13 +116,14 @@ def main():
     man_seq = pyglet.image.ImageGrid(man,1,4)
     actor = Hero(man_seq,(50,50))
     g.player = actor
+    g.team[0].add(actor)
     g.world.add(actor)
     g.world.collobjs.add(actor)
     actor.do(ActorController())
 
     #enemy
-    enemy = makeEnemy(man_seq,(200,100))
-    enemy.curMov = enemy.do(Patrol((1000,100),(200,100)))
+    enemy = makeEnemy(man_seq,(200,100),(1000,100))
+    enemy = makeEnemy(man_seq,(1000,200),(200,200))
 
     '''
     #enemy

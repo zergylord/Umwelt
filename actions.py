@@ -3,10 +3,10 @@ from cocos import actions
 import numpy as np
 import globals as g
 from collutil import *
-def Patrol(pos1,pos2):
+def Patrol(pos1,pos2,noise=0):
     return actions.Repeat(
-        MyMoveTo(pos1) +
-        MyMoveTo(pos2)
+        MyMoveTo(pos1,noise) +
+        MyMoveTo(pos2,noise)
         )
 class ShootAtEnemy(actions.base_actions.Action):
     #work around since Init can't handle pointers
@@ -21,8 +21,9 @@ class ShootAtEnemy(actions.base_actions.Action):
         self.target.skill['sThrow'].use(self.enemy.position)
 
 class FollowBeing(actions.base_actions.Action):
-    def initVars(self,tBeing):
+    def initVars(self,tBeing,noise = 0):
         self.tBeing = tBeing
+        self.noise = noise
     def start(self):
         pass
 
@@ -47,12 +48,13 @@ class FollowBeing(actions.base_actions.Action):
 
         #check for slow property
 
-        self.target.dx = dx
-        self.target.dy = dy
+        self.target.dx = dx+np.random.randn()*self.noise
+        self.target.dy = dy+np.random.randn()*self.noise
 class MyMoveTo(actions.base_actions.Action):
-  def __init__(self,tpos):
+  def __init__(self,tpos,noise=0):
     super(MyMoveTo,self).__init__()
     self.tpos = np.array(tpos)
+    self.noise = noise
   def start(self):
       pass
   #needed since non-interval action
@@ -69,6 +71,6 @@ class MyMoveTo(actions.base_actions.Action):
 
     #check for slow property
 
-    self.target.dx = dx
-    self.target.dy = dy
+    self.target.dx = dx+np.random.randn()*self.noise
+    self.target.dy = dy+np.random.randn()*self.noise
 

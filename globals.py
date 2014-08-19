@@ -1,1 +1,1 @@
-global tilemap,world,scroller,keyboard,player,pressed
+global tilemap,world,scroller,keyboard,player,pressed,team

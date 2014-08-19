@@ -31,16 +31,11 @@ class CSprite(cocos.sprite.Sprite,tiles.RectMapCollider):
     def update(self,dt):
         """check for object collision, if not then apply movement and check for
         grid collision"""
-        #object collider
-        if self.state == 'coll':
-            self.state = 'norm'
-            self.cshape.center = self.position #revert collision body back to prev pos
-        else:
-            coll,new = self.resolveMovement()
-            #---position is the sprite's center
-            self.last = self.position
-            self.cshape.center = new.center
-            #self.position = self.cshape.center
+        coll,new = self.resolveMovement()
+        #---position is the sprite's center
+        self.last = self.position
+        self.cshape.center = new.center
+        #self.position = self.cshape.center
         
 class HasHeading():
     """Interface that gives a class a heading property, and
@@ -70,6 +65,7 @@ class Being(CSprite,HasHeading):
     health = maxHealth
     image_seq = ()
     def __init__(self,image_seq,pos,radius):
+        self.team = 2
         self.image_seq = image_seq
         image = image_seq[0]
         self.skill = dict()
@@ -100,9 +96,14 @@ class Being(CSprite,HasHeading):
             print 'I died :-('
     def takeHit(self,damage):
         self.health -= damage
+    def kill(self):
+        g.world.remove(self)
+        g.team[self.team].remove(self)
+
 class Hero(Being):
     def __init__(self,image,pos):
         super(Hero,self).__init__(image,pos,16)
+        self.team = 0
 class SightBox():
     """ fundamental entity that isn't rendered and is currently used
     for line of sight via object collision. Only uses 4 directional
@@ -131,6 +132,8 @@ class SightBox():
                 self.state = 'notFoundEnemy'
                 self.owner.bState = 'alert'
                 print 'I see you!'
+        else:
+            self.state = 'notFoundEnemy'
 
 class SightLimitBox(SightBox):
     """same as the sightbox, but sets owners state from alert to normal once the enemy
@@ -141,17 +144,16 @@ class SightLimitBox(SightBox):
     def update(self,dt):
         self.__updatePosition__()
         
-        self.active = self.owner.bState == 'attacking'
+        self.active = self.owner.bState == 'attacking' or self.owner.bState == 'investigating'
         if self.active:
             #print 'active sight limit!'
             if self.state == 'foundEnemy':
                 self.state = 'notFoundEnemy' #collision must set foundEnemy everyframe
-            else:
-                self.timeLost += 1
-                #TODO:have this activate 'searching' behavior
+                #this bigger box can be used for alerting when already investigating
+                if self.owner.bState == 'investigating':
+                    print 'caught up with you!'
+                    self.owner.bState = 'alert'
+            elif self.owner.bState != 'investigating':
+                self.owner.bState = 'unalert'
                 print 'where are you?'
-                if self.timeLost >= 10:
-                    self.timeLost = 0
-                    self.owner.bState = 'unalert'
-                    print 'I lost you! :-('
 
